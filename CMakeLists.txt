@@ -8,7 +8,7 @@ message("Note:  this project uses git submodules in the source tree.")
 message("       if you haven't already, run the following command from")
 message("       the project's root directory:")
 message(" ")
-message("           git submodule update --init") 
+message("           git submodule update --init")
 message("\n")
 
 if( NOT EXISTS "${PROJECT_SOURCE_DIR}/utils/.git" )
@@ -23,7 +23,7 @@ endif()
 
 
 # setup tensorRT flags
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wno-write-strings -Wno-deprecated-declarations")	# -std=c++14 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -Wno-write-strings -Wno-deprecated-declarations")
 set(BUILD_DEPS "YES" CACHE BOOL "If YES, will install dependencies into sandbox.  Automatically reset to NO after dependencies are installed.")
 set(BUILD_INTERACTIVE "YES" CACHE BOOL "If NO, will download/install the default DNN models without prompting the user, and skip installation of PyTorch.")
 
@@ -56,19 +56,20 @@ message("-- CUDA version: ${CUDA_VERSION}")
 
 set(
 	CUDA_NVCC_FLAGS
-	${CUDA_NVCC_FLAGS}; 
-    -O3 
+	${CUDA_NVCC_FLAGS};
+    -O3
 	-gencode arch=compute_53,code=sm_53
 	-gencode arch=compute_62,code=sm_62
 )
 
 if(CUDA_VERSION_MAJOR GREATER 9)
-	message("-- CUDA ${CUDA_VERSION_MAJOR} detected, enabling SM_72")
+    message("-- CUDA ${CUDA_VERSION_MAJOR} detected, enabling SM_72 and SM_75")
 
 	set(
 		CUDA_NVCC_FLAGS
-		${CUDA_NVCC_FLAGS}; 
+		${CUDA_NVCC_FLAGS};
 		-gencode arch=compute_72,code=sm_72
+		-gencode arch=compute_75,code=sm_75
 	)
 
 	# OpenCV used for findHomography() and decomposeHomography()
@@ -86,7 +87,7 @@ if(CUDA_VERSION_MAJOR GREATER 9)
 			message("-- OpenCV version >= 3.0.0, enabling OpenCV")
 			set(HAS_OPENCV 1)
 			add_definitions(-DHAS_OPENCV)
-		endif()	
+		endif()
 	endif()
 endif()
 
@@ -107,13 +108,13 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_OUTPUT_DIR}/lib)
 
 # build C/C++ library
 include_directories(${PROJECT_INCLUDE_DIR} ${PROJECT_INCLUDE_DIR}/jetson-inference ${PROJECT_INCLUDE_DIR}/jetson-utils)
-include_directories(/usr/include/gstreamer-1.0 /usr/lib/aarch64-linux-gnu/gstreamer-1.0/include /usr/include/glib-2.0 /usr/include/libxml2 /usr/lib/aarch64-linux-gnu/glib-2.0/include/)
+include_directories(/usr/include/gstreamer-1.0 /usr/lib/gstreamer-1.0/include /usr/include/glib-2.0 /usr/include/libxml2 /usr/lib/glib-2.0/include/)
 
 file(GLOB inferenceSources c/*.cpp c/*.cu calibration/*.cpp plugins/*.cpp)
 file(GLOB inferenceIncludes c/*.h c/*.cuh calibration/*.h)
 
 cuda_add_library(jetson-inference SHARED ${inferenceSources})
-#target_link_libraries(jetson-inference nvcaffe_parser nvinfer)		# gstreamer-0.10 gstbase-0.10 gstapp-0.10 
+#target_link_libraries(jetson-inference nvcaffe_parser nvinfer)		# gstreamer-0.10 gstbase-0.10 gstapp-0.10
 
 
 # transfer all headers to the include directory
@@ -129,7 +130,7 @@ endforeach()
 execute_process( COMMAND "${CMAKE_COMMAND}" "-E" "create_symlink" "${PROJECT_SOURCE_DIR}/data/networks" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/networks" )
 execute_process( COMMAND "${CMAKE_COMMAND}" "-E" "create_symlink" "${PROJECT_SOURCE_DIR}/data/images" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/images" )
 
-  
+
 # copy image data (EDIT: these are now symlinked above)
 #file(GLOB imageData ${PROJECT_SOURCE_DIR}/data/images/*)
 
@@ -154,7 +155,7 @@ target_link_libraries(jetson-inference jetson-utils nvinfer nvinfer_plugin nvcaf
 if(CUDA_VERSION_MAJOR GREATER 9)
 	target_link_libraries(jetson-inference nvonnxparser)
 
-    if(HAS_OPENCV) 
+    if(HAS_OPENCV)
         message("-- Linking jetson-inference with OpenCV " ${OpenCV_VERSION})
         target_link_libraries(jetson-inference opencv_core opencv_calib3d)
     endif()
@@ -178,4 +179,3 @@ install(EXPORT jetson-inferenceConfig DESTINATION share/jetson-inference/cmake)
 
 # run ldconfig after installing
 install(CODE "execute_process( COMMAND ldconfig )")
-
