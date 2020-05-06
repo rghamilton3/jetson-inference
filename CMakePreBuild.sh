@@ -14,13 +14,15 @@ echo " "
 #set -e
 
 
-# install packages
-sudo apt-get update
-sudo apt-get install -y dialog
-sudo apt-get install -y libglew-dev glew-utils libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libglib2.0-dev
-sudo apt-get install -y libopencv-calib3d-dev libopencv-dev 
-# libgstreamer0.10-0-dev libgstreamer-plugins-base0.10-dev libxml2-dev
-sudo apt-get update
+# install packages only if apt is available
+if hash apt 2>/dev/null; then
+    sudo apt-get update
+    sudo apt-get install -y dialog
+    sudo apt-get install -y libglew-dev glew-utils libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libglib2.0-dev
+    sudo apt-get install -y libopencv-calib3d-dev libopencv-dev
+    # libgstreamer0.10-0-dev libgstreamer-plugins-base0.10-dev libxml2-dev
+    sudo apt-get update
+fi
 
 
 # run the model downloader
